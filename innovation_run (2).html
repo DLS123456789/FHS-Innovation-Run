@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Innovation Run | A Pulse Point Adventure</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #fafbfc;
+    --panel: #ffffff;
+    --red: #e63946;
+    --red-deep: #c5283d;
+    --red-light: #ffe3e6;
+    --teal: #2ec4b6;
+    --teal-light: #d4f4f0;
+    --amber: #ff9f1c;
+    --amber-light: #fff3dc;
+    --ink: #1d2733;
+    --ink-soft: #4a5568;
+    --muted: #8896a8;
+    --line: #e4e9f0;
+    --good: #2ec4b6;
+    --bad: #e63946;
+  }
+
+  html, body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+    overscroll-behavior: none;
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 12px;
+  }
+
+  /* HUD */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(29, 39, 51, 0.06);
+  }
+
+  .hud-section { display: flex; align-items: center; gap: 8px; }
+
+  .logo {
+    font-family: 'Bungee', cursive;
+    font-size: 1rem;
+    color: var(--red);
+    letter-spacing: 1px;
+  }
+
+  .stat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    background: #f1f4f8;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+
+  .stat-label {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.62rem;
+  }
+
+  .stat-value {
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  /* Screens */
+  .screen {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(29, 39, 51, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screen::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--red) 0%, var(--red) 40%, var(--teal) 40%, var(--teal) 70%, var(--amber) 70%, var(--amber) 100%);
+  }
+
+  .hidden { display: none !important; }
+
+  /* Start / character select */
+  .title {
+    font-family: 'Bungee', cursive;
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+    color: var(--red);
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+
+  .briefing {
+    background: #f1f4f8;
+    border-left: 4px solid var(--red);
+    padding: 14px 18px;
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 18px;
+  }
+
+  .briefing-label {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--red);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .briefing p { font-size: 0.92rem; color: var(--ink); margin-bottom: 6px; }
+  .briefing p:last-child { margin-bottom: 0; }
+  .briefing strong { color: var(--red-deep); }
+
+  .controls-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .control-card {
+    background: #f1f4f8;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .control-card-label {
+    font-family: 'Bungee', cursive;
+    color: var(--red);
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .control-card-keys {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .key {
+    background: white;
+    border: 1px solid var(--line);
+    border-bottom: 3px solid var(--ink-soft);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 28px;
+  }
+
+  .characters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  @media (min-width: 600px) {
+    .characters { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .char-card {
+    background: #f1f4f8;
+    border: 3px solid transparent;
+    border-radius: 14px;
+    padding: 12px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .char-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(29, 39, 51, 0.1); }
+  .char-card.selected { border-color: var(--red); background: var(--red-light); }
+
+  .char-avatar { width: 60px; height: 70px; margin: 0 auto 8px; display: block; }
+  .char-name { font-family: 'Bungee', cursive; font-size: 0.75rem; color: var(--ink); letter-spacing: 1px; }
+  .char-role { font-size: 0.65rem; color: var(--ink-soft); margin-top: 2px; }
+
+  .btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-family: 'Bungee', cursive;
+    font-size: 0.95rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 var(--red-deep);
+  }
+
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--red-deep); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--red-deep); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 0 4px 0 var(--red-deep); }
+
+  .btn-teal { background: var(--teal); box-shadow: 0 4px 0 #1a8b80; }
+  .btn-teal:hover { box-shadow: 0 6px 0 #1a8b80; }
+  .btn-teal:active { box-shadow: 0 2px 0 #1a8b80; }
+
+  /* ===== GAME CANVAS ===== */
+  .game-area {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 520px;
+    background: #c7e9f0;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid var(--ink);
+    box-shadow: 0 10px 30px rgba(29, 39, 51, 0.15);
+    user-select: none;
+    touch-action: none;
+  }
+
+  #game-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  /* In-game overlay HUD */
+  .game-hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .game-hud-stat {
+    background: rgba(255, 255, 255, 0.92);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 0 var(--ink);
+  }
+
+  .game-hud-stat.coins { color: var(--amber); }
+  .game-hud-stat.lives { color: var(--red); }
+  .game-hud-stat.level { color: var(--ink); }
+
+  /* Touch controls */
+  .touch-controls {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .touch-controls { display: none; }
+  }
+
+  .touch-pad-left {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+  }
+
+  .touch-btn {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    font-family: 'Bungee', cursive;
+    font-size: 1.4rem;
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 3px 0 var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .touch-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 var(--ink);
+    background: var(--amber-light);
+  }
+
+  .touch-btn.jump {
+    background: rgba(46, 196, 182, 0.9);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  .touch-btn.jump:active {
+    background: var(--teal);
+  }
+
+  /* Level intro overlay */
+  .level-intro {
+    position: absolute;
+    inset: 0;
+    background: rgba(29, 39, 51, 0.92);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .level-intro-num {
+    font-family: 'Bungee', cursive;
+    color: var(--amber);
+    font-size: 1rem;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .level-intro-title {
+    font-family: 'Bungee', cursive;
+    color: white;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+
+  .level-intro-goal {
+    color: var(--teal-light);
+    font-size: 0.9rem;
+    max-width: 380px;
+    margin-bottom: 20px;
+  }
+
+  .level-intro-hints {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 20px;
+    max-width: 500px;
+  }
+
+  .hint-pill {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hint-pill.collect { color: var(--amber); }
+  .hint-pill.avoid { color: var(--red); }
+
+  .intro-btn {
+    background: var(--amber);
+    color: var(--ink);
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-family: 'Bungee', cursive;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #c47200;
+  }
+
+  .intro-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #c47200;
+  }
+
+  /* Decision overlay */
+  .decision-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 40;
+    padding: 18px;
+    overflow-y: auto;
+  }
+
+  .decision-header {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .decision-tag {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--amber);
+    color: var(--ink);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+
+  .decision-title {
+    font-family: 'Bungee', cursive;
+    color: var(--red);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+
+  .decision-question {
+    background: #f1f4f8;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border-left: 4px solid var(--teal);
+    margin-bottom: 14px;
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+
+  .decision-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .decision-option {
+    background: white;
+    border: 2px solid var(--line);
+    color: var(--ink);
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  .decision-option:hover {
+    border-color: var(--red);
+    background: var(--red-light);
+    transform: translateX(3px);
+  }
+
+  /* Result overlay */
+  .result-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(29, 39, 51, 0.95);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .result-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+  }
+
+  .result-title {
+    font-family: 'Bungee', cursive;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+
+  .result-title.win { color: var(--teal); }
+  .result-title.mid { color: var(--amber); }
+  .result-title.fail { color: var(--red); }
+
+  .result-msg {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.92rem;
+    max-width: 480px;
+    margin-bottom: 16px;
+  }
+
+  .result-stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .result-stat {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+  }
+
+  .result-stat strong {
+    color: var(--amber);
+    font-weight: 700;
+  }
+
+  /* End screen */
+  .end-banner { text-align: center; padding: 16px 0; margin-bottom: 18px; }
+
+  .end-title {
+    font-family: 'Bungee', cursive;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    color: var(--red);
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+
+  .archetype-card {
+    text-align: center;
+    padding: 20px 16px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, var(--red-light), var(--teal-light));
+    border-radius: 16px;
+    border: 1px solid var(--line);
+  }
+
+  .archetype-art {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 10px;
+    background: white;
+    border-radius: 50%;
+    padding: 6px;
+    box-shadow: 0 4px 16px rgba(29, 39, 51, 0.1);
+    display: block;
+  }
+
+  .archetype-title {
+    font-family: 'Bungee', cursive;
+    font-size: 1.2rem;
+    color: var(--red);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .archetype-desc { color: var(--ink); font-size: 0.9rem; max-width: 460px; margin: 0 auto; }
+
+  .reflection-box {
+    background: #f1f4f8;
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 4px solid var(--amber);
+    margin-bottom: 16px;
+  }
+
+  .reflection-box h3 {
+    font-family: 'Bungee', cursive;
+    color: var(--red);
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+
+  .reflection-box p { color: var(--ink); font-size: 0.88rem; margin-bottom: 6px; }
+  .reflection-box strong { color: var(--red-deep); }
+
+  /* Coin pop animation */
+  .coin-pop {
+    position: absolute;
+    color: var(--amber);
+    font-family: 'Bungee', cursive;
+    font-size: 0.9rem;
+    pointer-events: none;
+    z-index: 25;
+    animation: coinFloat 0.8s ease-out forwards;
+    text-shadow: 1px 1px 0 var(--ink);
+  }
+
+  @keyframes coinFloat {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-40px); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-section">
+      <span class="logo">INNOVATION RUN</span>
+    </div>
+    <div class="hud-section">
+      <div class="stat">
+        <span class="stat-label">LVL</span>
+        <span class="stat-value" id="hud-level">0/5</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">COINS</span>
+        <span class="stat-value" id="hud-coins">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">REP</span>
+        <span class="stat-value" id="hud-lives">3</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== START SCREEN ===== -->
+  <div id="start-screen" class="screen">
+    <h1 class="title">INNOVATION RUN</h1>
+    <div class="subtitle">A Pulse Point Adventure</div>
+
+    <div class="briefing">
+      <div class="briefing-label">// HOW TO PLAY</div>
+      <p>Run, jump, and dodge through five health system levels. <strong>Collect ideas, evidence, and stakeholder buy in</strong> as gold coins. Avoid the hazards. Reach the flag at the end of each level to make a key decision.</p>
+      <p>Get hit three times and you're out. Make it to the boardroom to unlock your innovator archetype.</p>
+    </div>
+
+    <div class="controls-info">
+      <div class="control-card">
+        <div class="control-card-label">MOVE</div>
+        <div class="control-card-keys">
+          <span class="key">←</span>
+          <span class="key">→</span>
+          <span class="key">A</span>
+          <span class="key">D</span>
+        </div>
+      </div>
+      <div class="control-card">
+        <div class="control-card-label">JUMP</div>
+        <div class="control-card-keys">
+          <span class="key">SPACE</span>
+          <span class="key">↑</span>
+          <span class="key">W</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; color: var(--muted); font-size: 0.8rem; margin-bottom: 14px;">On mobile, use the on screen buttons</div>
+
+    <h2 style="font-family: 'Bungee', cursive; color: var(--red); text-align: center; font-size: 1rem; letter-spacing: 1px; margin-bottom: 12px;">CHOOSE YOUR HERO</h2>
+    <div class="characters" id="char-list"></div>
+
+    <button class="btn" id="start-btn" onclick="beginGame()" disabled>BEGIN ADVENTURE</button>
+  </div>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <div id="game-screen" class="screen hidden" style="padding: 14px;">
+    <div class="game-area" id="game-area">
+      <canvas id="game-canvas"></canvas>
+
+      <!-- In-game HUD -->
+      <div class="game-hud">
+        <div class="game-hud-stat level">LVL <span id="g-level">1</span>/5</div>
+        <div style="display: flex; gap: 6px;">
+          <div class="game-hud-stat coins">★ <span id="g-coins">0</span></div>
+          <div class="game-hud-stat lives">♥ <span id="g-lives">3</span></div>
+        </div>
+      </div>
+
+      <!-- Touch controls -->
+      <div class="touch-controls">
+        <div class="touch-pad-left">
+          <div class="touch-btn" id="btn-left">◀</div>
+          <div class="touch-btn" id="btn-right">▶</div>
+        </div>
+        <div class="touch-btn jump" id="btn-jump">▲</div>
+      </div>
+
+      <!-- Level intro -->
+      <div class="level-intro" id="level-intro">
+        <div class="level-intro-num" id="intro-num">LEVEL 1</div>
+        <div class="level-intro-title" id="intro-title">Title</div>
+        <div class="level-intro-goal" id="intro-goal">Goal</div>
+        <div class="level-intro-hints" id="intro-hints"></div>
+        <button class="intro-btn" onclick="startLevel()">GO</button>
+      </div>
+
+      <!-- Decision overlay -->
+      <div class="decision-overlay hidden" id="decision-overlay">
+        <div class="decision-header">
+          <div class="decision-tag">CHECKPOINT</div>
+          <div class="decision-title" id="decision-title"></div>
+        </div>
+        <div class="decision-question" id="decision-question"></div>
+        <div class="decision-options" id="decision-options"></div>
+      </div>
+
+      <!-- Result overlay -->
+      <div class="result-overlay hidden" id="result-overlay">
+        <div class="result-icon" id="result-icon"></div>
+        <div class="result-title" id="result-title-text">Result</div>
+        <div class="result-msg" id="result-msg"></div>
+        <div class="result-stats" id="result-stats"></div>
+        <button class="intro-btn" id="result-btn" onclick="afterResult()">CONTINUE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== END SCREEN ===== -->
+  <div id="end-screen" class="screen hidden">
+    <div class="end-banner">
+      <h1 class="end-title" id="end-title">ADVENTURE COMPLETE</h1>
+      <div class="subtitle" id="end-sub">DEBRIEF</div>
+    </div>
+
+    <div class="archetype-card">
+      <svg class="archetype-art" id="archetype-art" viewBox="0 0 100 100"></svg>
+      <div class="archetype-title" id="archetype-name"></div>
+      <div class="archetype-desc" id="archetype-blurb"></div>
+    </div>
+
+    <div class="reflection-box" id="reflection"></div>
+
+    <button class="btn" onclick="restart()">PLAY AGAIN</button>
+  </div>
+
+</div>
+
+<script>
+// ============== CHARACTERS ==============
+const characters = [
+  { id: 'doc', name: 'DR KAI', role: 'Junior Doctor', colours: { skin: '#f4d4b8', hair: '#1d2733', body: '#ffffff', accent: '#e63946' } },
+  { id: 'lead', name: 'MS AVA', role: 'Innovation Lead', colours: { skin: '#e8b88a', hair: '#1d2733', body: '#2ec4b6', accent: '#1d2733' } },
+  { id: 'nurse', name: 'SAM', role: 'Senior Nurse', colours: { skin: '#c98e5b', hair: '#6b3410', body: '#ffffff', accent: '#e63946' } },
+  { id: 'prof', name: 'PROF JO', role: 'Researcher', colours: { skin: '#d4b890', hair: '#8a8a8a', body: '#1d2733', accent: '#ff9f1c' } }
+];
+
+function drawCharIcon(svgEl, c) {
+  // Small portrait for character select cards
+  svgEl.innerHTML = `
+    <rect x="14" y="42" width="32" height="22" fill="${c.colours.body}" stroke="#1d2733" stroke-width="1.5"/>
+    <circle cx="30" cy="22" r="13" fill="${c.colours.skin}" stroke="#1d2733" stroke-width="1.5"/>
+    <path d="M 18,20 Q 30,10 42,20 L 42,14 Q 30,4 18,14 Z" fill="${c.colours.hair}"/>
+    <circle cx="25" cy="23" r="1.2" fill="#1d2733"/>
+    <circle cx="35" cy="23" r="1.2" fill="#1d2733"/>
+    <path d="M 26,29 Q 30,31 34,29" stroke="#1d2733" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <rect x="22" y="46" width="16" height="4" fill="${c.colours.accent}"/>
+  `;
+}
+
+// ============== LEVELS ==============
+const levels = [
+  {
+    title: "RURAL TELEHEALTH",
+    intro: "Race to set up telehealth across the outback. Watch for connectivity drop outs.",
+    hints: [
+      { type: 'collect', label: '★ Evidence' },
+      { type: 'avoid', label: '⚠ Digital divide' }
+    ],
+    bgColour: '#fdf4e3',
+    groundColour: '#5cb85c',
+    bgElements: 'rural',
+    length: 1800,
+    coins: [
+      { x: 280, y: 280 }, { x: 320, y: 280 }, { x: 360, y: 280 },
+      { x: 550, y: 220 }, { x: 600, y: 220 },
+      { x: 820, y: 180 }, { x: 870, y: 180 }, { x: 920, y: 180 },
+      { x: 1100, y: 280 }, { x: 1150, y: 240 }, { x: 1200, y: 200 },
+      { x: 1450, y: 280 }, { x: 1500, y: 280 }
+    ],
+    platforms: [
+      { x: 500, y: 260, w: 200, h: 16 },
+      { x: 780, y: 220, w: 200, h: 16 },
+      { x: 1080, y: 240, w: 100, h: 16 },
+      { x: 1150, y: 200, w: 100, h: 16 }
+    ],
+    hazards: [
+      { x: 420, y: 305, w: 30, h: 25, type: 'spike' },
+      { x: 720, y: 305, w: 30, h: 25, type: 'spike' },
+      { x: 1300, y: 305, w: 40, h: 25, type: 'spike' }
+    ],
+    decision: {
+      title: "Rural Innovation Strategy",
+      question: "You've reached the regional hub. How do you scale telehealth across all six towns?",
+      options: [
+        { text: "Roll out fast to all six sites at once.", verdict: 'fail',
+          msg: "Speed over readiness. Two sites have drop outs, elderly patients struggle, and specialists become frustrated.",
+          scores: { outcomes: 1, feasibility: -2, ethics: -2, cost: -1 } },
+        { text: "Start with one town, train a nurse coordinator, then scale on evidence.", verdict: 'win',
+          msg: "Smart. The pilot shows a 60% reduction in wait times. You scale responsibly.",
+          scores: { outcomes: 2, feasibility: 2, ethics: 2, cost: 1 } },
+        { text: "Partner with a private vendor to run everything.", verdict: 'mid',
+          msg: "Fast but you've lost control of data governance and costs balloon.",
+          scores: { outcomes: 1, feasibility: 1, ethics: -2, cost: -2 } }
+      ]
+    }
+  },
+  {
+    title: "ED CRISIS",
+    intro: "The ED is overwhelmed. Sprint through, dodge the hazards, reach triage.",
+    hints: [
+      { type: 'collect', label: '★ Clinical data' },
+      { type: 'avoid', label: '⚠ Burnout' }
+    ],
+    bgColour: '#ffe3e6',
+    groundColour: '#1d2733',
+    bgElements: 'ed',
+    length: 1900,
+    coins: [
+      { x: 260, y: 280 }, { x: 300, y: 280 },
+      { x: 500, y: 220 }, { x: 550, y: 220 }, { x: 600, y: 220 },
+      { x: 800, y: 180 }, { x: 850, y: 180 },
+      { x: 1050, y: 240 }, { x: 1100, y: 200 }, { x: 1150, y: 160 },
+      { x: 1400, y: 280 }, { x: 1450, y: 280 }, { x: 1500, y: 280 }
+    ],
+    platforms: [
+      { x: 450, y: 260, w: 220, h: 16 },
+      { x: 770, y: 220, w: 150, h: 16 },
+      { x: 1020, y: 280, w: 50, h: 16 },
+      { x: 1080, y: 240, w: 50, h: 16 },
+      { x: 1140, y: 200, w: 50, h: 16 }
+    ],
+    hazards: [
+      { x: 380, y: 305, w: 40, h: 25, type: 'spike' },
+      { x: 700, y: 305, w: 40, h: 25, type: 'spike' },
+      { x: 950, y: 305, w: 50, h: 25, type: 'spike' },
+      { x: 1300, y: 305, w: 50, h: 25, type: 'spike' }
+    ],
+    decision: {
+      title: "AI Triage Decision",
+      question: "The vendor's AI triage tool has 89% accuracy but was trained on US data. How do you proceed?",
+      options: [
+        { text: "Deploy now. The ED is in crisis.", verdict: 'fail',
+          msg: "Within weeks, clinicians flag the AI underweights symptoms common in Indigenous and culturally diverse patients. Trust collapses.",
+          scores: { outcomes: -2, feasibility: 1, ethics: -2, cost: 0 } },
+        { text: "Validate on local data first with clinician oversight on every prediction.", verdict: 'win',
+          msg: "Rigorous. Validation reveals bias which the vendor addresses. The final tool is trustworthy and equitable.",
+          scores: { outcomes: 2, feasibility: 1, ethics: 2, cost: 0 } },
+        { text: "Use AI as decision support with monthly audits.", verdict: 'win',
+          msg: "Pragmatic. Clinicians retain authority. Monthly audits catch bias early. Throughput improves without compromising safety.",
+          scores: { outcomes: 2, feasibility: 2, ethics: 2, cost: 1 } }
+      ]
+    }
+  },
+  {
+    title: "AGED CARE LODGE",
+    intro: "Navigate the residential aged care facility. Some choices have ethical weight.",
+    hints: [
+      { type: 'collect', label: '★ Resident voice' },
+      { type: 'avoid', label: '⚠ Surveillance' }
+    ],
+    bgColour: '#fff5e6',
+    groundColour: '#ffd4a3',
+    bgElements: 'aged',
+    length: 1800,
+    coins: [
+      { x: 240, y: 280 }, { x: 290, y: 280 },
+      { x: 500, y: 240 }, { x: 560, y: 220 }, { x: 620, y: 240 },
+      { x: 850, y: 200 }, { x: 900, y: 200 }, { x: 950, y: 200 },
+      { x: 1150, y: 280 }, { x: 1200, y: 280 },
+      { x: 1400, y: 240 }, { x: 1450, y: 240 }, { x: 1500, y: 240 }
+    ],
+    platforms: [
+      { x: 480, y: 280, w: 180, h: 16 },
+      { x: 820, y: 240, w: 180, h: 16 },
+      { x: 1380, y: 280, w: 180, h: 16 }
+    ],
+    hazards: [
+      { x: 380, y: 305, w: 40, h: 25, type: 'spike' },
+      { x: 700, y: 305, w: 40, h: 25, type: 'spike' },
+      { x: 1050, y: 305, w: 50, h: 25, type: 'spike' },
+      { x: 1280, y: 305, w: 50, h: 25, type: 'spike' }
+    ],
+    decision: {
+      title: "Monitoring Ethics",
+      question: "Families want wearable monitors for residents, some with dementia who can't consent. What's your call?",
+      options: [
+        { text: "Roll it out to all residents. Family consent is enough.", verdict: 'fail',
+          msg: "You've sidestepped a serious ethical issue. Surveillance without meaningful consent treats vulnerable people as objects.",
+          scores: { outcomes: 1, feasibility: 2, ethics: -2, cost: 0 } },
+        { text: "Co design with residents, families, and an ethics committee.", verdict: 'win',
+          msg: "Takes longer but produces a defensible program. You settle on fall detection only, with clear data protocols.",
+          scores: { outcomes: 2, feasibility: 1, ethics: 2, cost: 1 } },
+        { text: "Wait for clearer national guidelines.", verdict: 'fail',
+          msg: "A fall causes serious injury that monitoring could have prevented. Inaction has its own ethical cost.",
+          scores: { outcomes: -2, feasibility: 1, ethics: -1, cost: 1 } }
+      ]
+    }
+  },
+  {
+    title: "COMMUNITY HUB",
+    intro: "Connect fragmented services. The terrain is tricky here.",
+    hints: [
+      { type: 'collect', label: '★ Stakeholder buy in' },
+      { type: 'avoid', label: '⚠ Silos' }
+    ],
+    bgColour: '#e8f4f8',
+    groundColour: '#2ec4b6',
+    bgElements: 'community',
+    length: 1900,
+    coins: [
+      { x: 260, y: 260 }, { x: 310, y: 240 }, { x: 360, y: 220 },
+      { x: 580, y: 180 }, { x: 630, y: 180 }, { x: 680, y: 180 },
+      { x: 900, y: 240 }, { x: 950, y: 220 }, { x: 1000, y: 200 },
+      { x: 1200, y: 280 }, { x: 1250, y: 280 }, { x: 1300, y: 280 },
+      { x: 1500, y: 200 }, { x: 1550, y: 200 }
+    ],
+    platforms: [
+      { x: 280, y: 270, w: 50, h: 16 },
+      { x: 340, y: 240, w: 50, h: 16 },
+      { x: 400, y: 210, w: 50, h: 16 },
+      { x: 560, y: 220, w: 180, h: 16 },
+      { x: 880, y: 270, w: 50, h: 16 },
+      { x: 940, y: 240, w: 50, h: 16 },
+      { x: 1000, y: 220, w: 50, h: 16 },
+      { x: 1480, y: 230, w: 130, h: 16 }
+    ],
+    hazards: [
+      { x: 470, y: 305, w: 60, h: 25, type: 'spike' },
+      { x: 760, y: 305, w: 80, h: 25, type: 'spike' },
+      { x: 1100, y: 305, w: 50, h: 25, type: 'spike' },
+      { x: 1380, y: 305, w: 50, h: 25, type: 'spike' }
+    ],
+    decision: {
+      title: "Integrated Care",
+      question: "Patients bounce between GPs, hospitals, and community services. Where do you start?",
+      options: [
+        { text: "Shared care plan plus a care navigator for top 500 high risk patients.", verdict: 'win',
+          msg: "Patient centred and evidence based. Readmissions drop 23%. Patients report feeling 'seen' for the first time.",
+          scores: { outcomes: 2, feasibility: 2, ethics: 2, cost: 2 } },
+        { text: "Mandate a single electronic health record across all providers.", verdict: 'fail',
+          msg: "Top down mandates trigger resistance. Practices refuse to switch. The rollout becomes politically toxic.",
+          scores: { outcomes: 0, feasibility: -2, ethics: 0, cost: -2 } },
+        { text: "Build a patient app and let patients share their own data.", verdict: 'fail',
+          msg: "Empowering for the digitally literate. But the most at risk patients don't use it. Health inequities widen.",
+          scores: { outcomes: 0, feasibility: 1, ethics: -2, cost: 0 } }
+      ]
+    }
+  },
+  {
+    title: "BOARDROOM FINALE",
+    intro: "Reach the executive suite and pitch your innovation. Last chance to impress.",
+    hints: [
+      { type: 'collect', label: '★ Pitch points' },
+      { type: 'avoid', label: '⚠ Change fatigue' }
+    ],
+    bgColour: '#f1f4f8',
+    groundColour: '#4a5568',
+    bgElements: 'boardroom',
+    length: 1800,
+    coins: [
+      { x: 260, y: 280 }, { x: 320, y: 250 }, { x: 380, y: 220 },
+      { x: 540, y: 180 }, { x: 600, y: 180 }, { x: 660, y: 180 },
+      { x: 820, y: 220 }, { x: 880, y: 220 },
+      { x: 1100, y: 280 }, { x: 1160, y: 250 }, { x: 1220, y: 220 },
+      { x: 1450, y: 180 }, { x: 1500, y: 180 }, { x: 1550, y: 180 }
+    ],
+    platforms: [
+      { x: 280, y: 280, w: 50, h: 16 },
+      { x: 350, y: 250, w: 50, h: 16 },
+      { x: 420, y: 220, w: 50, h: 16 },
+      { x: 520, y: 220, w: 180, h: 16 },
+      { x: 800, y: 260, w: 130, h: 16 },
+      { x: 1080, y: 280, w: 50, h: 16 },
+      { x: 1150, y: 250, w: 50, h: 16 },
+      { x: 1220, y: 220, w: 50, h: 16 },
+      { x: 1430, y: 220, w: 200, h: 16 }
+    ],
+    hazards: [
+      { x: 480, y: 305, w: 40, h: 25, type: 'spike' },
+      { x: 740, y: 305, w: 50, h: 25, type: 'spike' },
+      { x: 970, y: 305, w: 60, h: 25, type: 'spike' },
+      { x: 1320, y: 305, w: 60, h: 25, type: 'spike' }
+    ],
+    decision: {
+      title: "Leading the Change",
+      question: "Your innovation is ready, but staff are change fatigued. How do you lead implementation?",
+      options: [
+        { text: "Mandate it from executive level. The evidence is clear.", verdict: 'fail',
+          msg: "Authority based change in a fatigued workforce backfires. Two senior clinicians resign. The innovation fails to embed.",
+          scores: { outcomes: -1, feasibility: -2, ethics: -1, cost: -1 } },
+        { text: "Find clinical champions and co design with frontline staff.", verdict: 'win',
+          msg: "Champions drive peer adoption. Twelve months on, the innovation is embedded and outcomes improve.",
+          scores: { outcomes: 2, feasibility: 2, ethics: 1, cost: 1 } },
+        { text: "Run financial incentives for compliance.",  verdict: 'fail',
+          msg: "Compliance ticks up but when incentives end, behaviour reverts. You've created uncomfortable dynamics.",
+          scores: { outcomes: 0, feasibility: 1, ethics: -1, cost: -2 } }
+      ]
+    }
+  }
+];
+
+const archetypes = [
+  { name: "THE VISIONARY", threshold: 25, art: 'visionary',
+    desc: "You balance ambition with realism. You see what's possible and find ways to get there without leaving anyone behind." },
+  { name: "THE NAVIGATOR", threshold: 15, art: 'navigator',
+    desc: "You lead with equity and patient dignity. Your innovations hold up to scrutiny." },
+  { name: "THE BUILDER", threshold: 5, art: 'builder',
+    desc: "You favour what works in the real world. Your strength is implementation." },
+  { name: "THE LEARNER", threshold: -100, art: 'learner',
+    desc: "You're still finding your innovation voice. Use the reflective report to dig into the trade offs." }
+];
+
+const archetypeArt = {
+  visionary: `<circle cx="50" cy="50" r="42" fill="none" stroke="#e63946" stroke-width="2.5" stroke-dasharray="4,4"><animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="20s" repeatCount="indefinite"/></circle>
+    <circle cx="50" cy="42" r="14" fill="#e63946"/>
+    <path d="M 30,80 Q 50,55 70,80 L 70,90 L 30,90 Z" fill="#e63946"/>
+    <circle cx="50" cy="20" r="4" fill="#ff9f1c"/>`,
+  navigator: `<circle cx="50" cy="50" r="38" fill="none" stroke="#2ec4b6" stroke-width="3"/>
+    <g transform="translate(50,50)">
+      <line x1="0" y1="-28" x2="0" y2="28" stroke="#e63946" stroke-width="2"/>
+      <line x1="-28" y1="0" x2="28" y2="0" stroke="#1d2733" stroke-width="2"/>
+      <polygon points="0,-24 6,0 0,24 -6,0" fill="#e63946"/>
+      <circle r="5" fill="#fff" stroke="#1d2733" stroke-width="1.5"/>
+    </g>`,
+  builder: `<rect x="20" y="40" width="16" height="40" fill="#2ec4b6"/>
+    <rect x="42" y="25" width="16" height="55" fill="#e63946"/>
+    <rect x="64" y="35" width="16" height="45" fill="#ff9f1c"/>
+    <path d="M 15,82 L 85,82" stroke="#1d2733" stroke-width="2.5"/>`,
+  learner: `<circle cx="50" cy="50" r="38" fill="none" stroke="#ff9f1c" stroke-width="3"/>
+    <path d="M 25,50 L 45,65 L 75,30" stroke="#2ec4b6" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+};
+
+// ============== STATE ==============
+let selectedChar = null;
+let currentLevel = 0;
+let coins = 0;
+let lives = 3;
+let totals = { outcomes: 0, feasibility: 0, ethics: 0, cost: 0 };
+
+// Game runtime state
+let canvas, ctx, gameRunning = false;
+let camera = { x: 0 };
+let player = null;
+let levelData = null;
+let keys = { left: false, right: false, jump: false };
+let levelComplete = false;
+let invulnTimer = 0;
+
+const GRAVITY = 0.6;
+const JUMP_POWER = -11;
+const MOVE_SPEED = 4;
+const GROUND_Y = 330;
+
+// ============== INIT CHAR SELECT ==============
+function initCharSelect() {
+  const list = document.getElementById('char-list');
+  list.innerHTML = '';
+  characters.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.dataset.id = c.id;
+    card.innerHTML = `
+      <svg class="char-avatar" viewBox="0 0 60 70"></svg>
+      <div class="char-name">${c.name}</div>
+      <div class="char-role">${c.role}</div>
+    `;
+    drawCharIcon(card.querySelector('svg'), c);
+    card.onclick = () => {
+      selectedChar = c;
+      document.querySelectorAll('.char-card').forEach(el => el.classList.toggle('selected', el.dataset.id === c.id));
+      document.getElementById('start-btn').disabled = false;
+    };
+    list.appendChild(card);
+  });
+}
+
+function updateHUD() {
+  document.getElementById('hud-level').textContent = `${currentLevel}/${levels.length}`;
+  document.getElementById('hud-coins').textContent = coins;
+  document.getElementById('hud-lives').textContent = lives;
+  document.getElementById('g-level').textContent = Math.min(currentLevel + 1, levels.length);
+  document.getElementById('g-coins').textContent = coins;
+  document.getElementById('g-lives').textContent = lives;
+}
+
+function beginGame() {
+  if (!selectedChar) return;
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('game-screen').classList.remove('hidden');
+  setupCanvas();
+  showLevelIntro();
+}
+
+function setupCanvas() {
+  canvas = document.getElementById('game-canvas');
+  ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  // We use a fixed game world resolution of 800 x 360
+  canvas.width = 800;
+  canvas.height = 360;
+}
+
+function showLevelIntro() {
+  const lvl = levels[currentLevel];
+  document.getElementById('intro-num').textContent = `LEVEL ${currentLevel + 1} OF ${levels.length}`;
+  document.getElementById('intro-title').textContent = lvl.title;
+  document.getElementById('intro-goal').textContent = lvl.intro;
+  const hintsEl = document.getElementById('intro-hints');
+  hintsEl.innerHTML = '';
+  lvl.hints.forEach(h => {
+    const pill = document.createElement('div');
+    pill.className = 'hint-pill ' + h.type;
+    pill.textContent = h.label;
+    hintsEl.appendChild(pill);
+  });
+  document.getElementById('level-intro').classList.remove('hidden');
+  document.getElementById('decision-overlay').classList.add('hidden');
+  document.getElementById('result-overlay').classList.add('hidden');
+}
+
+function startLevel() {
+  document.getElementById('level-intro').classList.add('hidden');
+  levelData = JSON.parse(JSON.stringify(levels[currentLevel]));
+  // Mark coins as not collected
+  levelData.coins.forEach(c => c.collected = false);
+  player = {
+    x: 50,
+    y: GROUND_Y - 40,
+    vx: 0,
+    vy: 0,
+    w: 28,
+    h: 40,
+    onGround: false,
+    facing: 1,
+    animFrame: 0
+  };
+  camera.x = 0;
+  levelComplete = false;
+  invulnTimer = 0;
+  gameRunning = true;
+  updateHUD();
+  requestAnimationFrame(gameLoop);
+}
+
+// ============== GAME LOOP ==============
+function gameLoop() {
+  if (!gameRunning) return;
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+function update() {
+  // Horizontal movement
+  if (keys.left) {
+    player.vx = -MOVE_SPEED;
+    player.facing = -1;
+  } else if (keys.right) {
+    player.vx = MOVE_SPEED;
+    player.facing = 1;
+  } else {
+    player.vx *= 0.8;
+    if (Math.abs(player.vx) < 0.1) player.vx = 0;
+  }
+
+  // Jump
+  if (keys.jump && player.onGround) {
+    player.vy = JUMP_POWER;
+    player.onGround = false;
+  }
+
+  // Gravity
+  player.vy += GRAVITY;
+  if (player.vy > 12) player.vy = 12;
+
+  // Apply velocity
+  player.x += player.vx;
+  player.y += player.vy;
+
+  // Bounds
+  if (player.x < 0) player.x = 0;
+  if (player.x > levelData.length - player.w) player.x = levelData.length - player.w;
+
+  // Ground collision
+  player.onGround = false;
+  if (player.y + player.h >= GROUND_Y) {
+    player.y = GROUND_Y - player.h;
+    player.vy = 0;
+    player.onGround = true;
+  }
+
+  // Platform collisions
+  levelData.platforms.forEach(p => {
+    const px = player.x, py = player.y, pw = player.w, ph = player.h;
+    // Coming from above
+    if (px + pw > p.x && px < p.x + p.w &&
+        py + ph >= p.y && py + ph - player.vy <= p.y + 1 &&
+        player.vy >= 0) {
+      player.y = p.y - ph;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  });
+
+  // Coin collection
+  levelData.coins.forEach(c => {
+    if (c.collected) return;
+    const cx = c.x + 10, cy = c.y + 10, r = 12;
+    const px = player.x + player.w / 2, py = player.y + player.h / 2;
+    const dx = px - cx, dy = py - cy;
+    if (Math.sqrt(dx * dx + dy * dy) < r + 15) {
+      c.collected = true;
+      coins++;
+      showCoinPop(c.x - camera.x, c.y);
+      updateHUD();
+    }
+  });
+
+  // Hazard collision
+  if (invulnTimer > 0) invulnTimer--;
+  if (invulnTimer === 0) {
+    for (const h of levelData.hazards) {
+      if (rectOverlap(player.x, player.y, player.w, player.h, h.x, h.y, h.w, h.h)) {
+        hitHazard();
+        break;
+      }
+    }
+  }
+
+  // Camera follow
+  const targetCam = player.x - 300;
+  camera.x += (targetCam - camera.x) * 0.1;
+  if (camera.x < 0) camera.x = 0;
+  if (camera.x > levelData.length - 800) camera.x = levelData.length - 800;
+
+  // Reach end of level
+  if (!levelComplete && player.x >= levelData.length - 80) {
+    levelComplete = true;
+    gameRunning = false;
+    setTimeout(showDecision, 300);
+  }
+
+  // Animation frame
+  if (Math.abs(player.vx) > 0.5) {
+    player.animFrame = (player.animFrame + 0.2) % 4;
+  } else {
+    player.animFrame = 0;
+  }
+}
+
+function rectOverlap(x1, y1, w1, h1, x2, y2, w2, h2) {
+  return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+}
+
+function hitHazard() {
+  lives--;
+  invulnTimer = 90;
+  player.vy = -8;
+  updateHUD();
+  if (lives <= 0) {
+    gameRunning = false;
+    setTimeout(() => endGame(true), 500);
+  }
+}
+
+function showCoinPop(x, y) {
+  // Position relative to game-area; we approximate
+  const area = document.getElementById('game-area');
+  const rect = area.getBoundingClientRect();
+  const scale = rect.width / 800;
+  const pop = document.createElement('div');
+  pop.className = 'coin-pop';
+  pop.style.left = (x * scale) + 'px';
+  pop.style.top = (y * scale + 60) + 'px';
+  pop.textContent = '+1';
+  area.appendChild(pop);
+  setTimeout(() => pop.remove(), 800);
+}
+
+// ============== DRAW ==============
+function draw() {
+  // Background
+  ctx.fillStyle = levelData.bgColour;
+  ctx.fillRect(0, 0, 800, 360);
+
+  // Parallax background elements
+  drawBackground();
+
+  // Ground
+  ctx.fillStyle = levelData.groundColour;
+  ctx.fillRect(0, GROUND_Y, 800, 30);
+  // Ground texture
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  for (let i = 0; i < 800; i += 20) {
+    const xOff = (i - camera.x * 0.5) % 40;
+    if (xOff >= 0 && xOff < 20) {
+      ctx.fillRect(i, GROUND_Y, 2, 30);
+    }
+  }
+
+  // Platforms
+  levelData.platforms.forEach(p => {
+    const sx = p.x - camera.x;
+    if (sx + p.w < 0 || sx > 800) return;
+    ctx.fillStyle = '#1d2733';
+    ctx.fillRect(sx, p.y, p.w, p.h);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(sx + 2, p.y + 2, p.w - 4, 3);
+    ctx.fillStyle = levelData.groundColour;
+    ctx.fillRect(sx + 2, p.y + 6, p.w - 4, p.h - 8);
+  });
+
+  // Hazards
+  levelData.hazards.forEach(h => {
+    const sx = h.x - camera.x;
+    if (sx + h.w < 0 || sx > 800) return;
+    // Spike triangles
+    const spikeWidth = 12;
+    const numSpikes = Math.floor(h.w / spikeWidth);
+    ctx.fillStyle = '#e63946';
+    ctx.strokeStyle = '#c5283d';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < numSpikes; i++) {
+      const x = sx + i * spikeWidth;
+      ctx.beginPath();
+      ctx.moveTo(x, h.y + h.h);
+      ctx.lineTo(x + spikeWidth / 2, h.y);
+      ctx.lineTo(x + spikeWidth, h.y + h.h);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+  });
+
+  // Coins
+  levelData.coins.forEach(c => {
+    if (c.collected) return;
+    const sx = c.x - camera.x;
+    if (sx + 20 < 0 || sx > 800) return;
+    const wiggle = Math.sin(Date.now() / 200 + c.x) * 3;
+    const cx = sx + 10, cy = c.y + 10 + wiggle;
+    ctx.fillStyle = '#ff9f1c';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath();
+    ctx.arc(cx - 2, cy - 2, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1d2733';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('★', cx, cy);
+  });
+
+  // End flag
+  const flagX = levelData.length - 60 - camera.x;
+  if (flagX < 800 && flagX > -40) {
+    ctx.fillStyle = '#1d2733';
+    ctx.fillRect(flagX, GROUND_Y - 80, 4, 80);
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath();
+    ctx.moveTo(flagX + 4, GROUND_Y - 80);
+    ctx.lineTo(flagX + 30, GROUND_Y - 70);
+    ctx.lineTo(flagX + 4, GROUND_Y - 60);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('GO', flagX + 14, GROUND_Y - 67);
+  }
+
+  // Player
+  drawPlayer();
+}
+
+function drawBackground() {
+  // Sky gradient already handled by bg colour
+  // Draw themed background elements based on level
+  const camOffset = camera.x * 0.5;
+
+  switch (levelData.bgElements) {
+    case 'rural':
+      // Sun
+      ctx.fillStyle = '#ff9f1c';
+      ctx.beginPath();
+      ctx.arc(680, 80, 30, 0, Math.PI * 2);
+      ctx.fill();
+      // Hills in distance
+      ctx.fillStyle = '#2ec4b6';
+      ctx.globalAlpha = 0.4;
+      for (let i = -1; i < 5; i++) {
+        const baseX = i * 400 - camOffset * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(baseX, GROUND_Y);
+        ctx.quadraticCurveTo(baseX + 100, GROUND_Y - 80, baseX + 200, GROUND_Y);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(baseX + 200, GROUND_Y);
+        ctx.quadraticCurveTo(baseX + 300, GROUND_Y - 60, baseX + 400, GROUND_Y);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      // Small houses
+      for (let i = 0; i < 4; i++) {
+        const hx = i * 500 + 200 - camOffset * 0.6;
+        if (hx > -50 && hx < 850) {
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(hx, GROUND_Y - 40, 30, 30);
+          ctx.fillStyle = '#e63946';
+          ctx.beginPath();
+          ctx.moveTo(hx - 3, GROUND_Y - 40);
+          ctx.lineTo(hx + 15, GROUND_Y - 55);
+          ctx.lineTo(hx + 33, GROUND_Y - 40);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+      break;
+
+    case 'ed':
+      // Hospital building silhouette
+      ctx.fillStyle = '#1d2733';
+      ctx.globalAlpha = 0.15;
+      ctx.fillRect(0, 50, 800, GROUND_Y - 50);
+      ctx.globalAlpha = 1;
+      // Hospital cross signs
+      for (let i = 0; i < 5; i++) {
+        const hx = i * 400 + 100 - camOffset * 0.4;
+        if (hx > -50 && hx < 850) {
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(hx - 15, 80, 30, 30);
+          ctx.fillStyle = '#e63946';
+          ctx.fillRect(hx - 4, 85, 8, 20);
+          ctx.fillRect(hx - 12, 91, 24, 8);
+        }
+      }
+      // Heart monitor line across background
+      ctx.strokeStyle = '#e63946';
+      ctx.globalAlpha = 0.4;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 200);
+      for (let x = 0; x < 800; x += 80) {
+        const adjX = x - (camOffset * 0.3) % 80;
+        ctx.lineTo(adjX, 200);
+        ctx.lineTo(adjX + 10, 180);
+        ctx.lineTo(adjX + 20, 220);
+        ctx.lineTo(adjX + 30, 200);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      break;
+
+    case 'aged':
+      // Warm sky already, draw distant trees
+      ctx.fillStyle = '#5cb85c';
+      ctx.globalAlpha = 0.5;
+      for (let i = 0; i < 8; i++) {
+        const tx = i * 200 - camOffset * 0.3;
+        if (tx > -30 && tx < 830) {
+          ctx.beginPath();
+          ctx.arc(tx, GROUND_Y - 30, 25, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#8b5a3c';
+          ctx.fillRect(tx - 2, GROUND_Y - 15, 4, 15);
+          ctx.fillStyle = '#5cb85c';
+        }
+      }
+      ctx.globalAlpha = 1;
+      // Floating hearts
+      for (let i = 0; i < 6; i++) {
+        const hx = (i * 250 - camOffset * 0.2 + Date.now() * 0.02) % 900 - 50;
+        const hy = 60 + Math.sin(Date.now() / 600 + i) * 20;
+        ctx.fillStyle = '#e63946';
+        ctx.globalAlpha = 0.3;
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('♥', hx, hy);
+      }
+      ctx.globalAlpha = 1;
+      break;
+
+    case 'community':
+      // Connected nodes representing services
+      ctx.strokeStyle = '#2ec4b6';
+      ctx.globalAlpha = 0.3;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
+      for (let i = 0; i < 5; i++) {
+        const ax = i * 300 + 100 - camOffset * 0.3;
+        const bx = i * 300 + 250 - camOffset * 0.3;
+        if (ax > -100 && ax < 900) {
+          ctx.beginPath();
+          ctx.moveTo(ax, 100);
+          ctx.lineTo(bx, 150);
+          ctx.stroke();
+        }
+      }
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      // Service nodes
+      const services = ['#e63946', '#2ec4b6', '#ff9f1c', '#1d2733'];
+      for (let i = 0; i < 8; i++) {
+        const nx = i * 200 + 80 - camOffset * 0.3;
+        const ny = 80 + (i % 2) * 60;
+        if (nx > -30 && nx < 830) {
+          ctx.fillStyle = services[i % services.length];
+          ctx.globalAlpha = 0.5;
+          ctx.beginPath();
+          ctx.arc(nx, ny, 10, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+      break;
+
+    case 'boardroom':
+      // Office building silhouette
+      ctx.fillStyle = '#1d2733';
+      ctx.globalAlpha = 0.2;
+      for (let i = 0; i < 6; i++) {
+        const bx = i * 200 - camOffset * 0.3;
+        if (bx > -100 && bx < 900) {
+          const bh = 100 + (i % 3) * 40;
+          ctx.fillRect(bx, GROUND_Y - bh, 130, bh);
+        }
+      }
+      ctx.globalAlpha = 1;
+      // Office windows
+      for (let i = 0; i < 6; i++) {
+        const bx = i * 200 - camOffset * 0.3;
+        if (bx > -100 && bx < 900) {
+          for (let y = 0; y < 5; y++) {
+            for (let x = 0; x < 4; x++) {
+              const wx = bx + 15 + x * 25;
+              const wy = GROUND_Y - 90 + y * 18;
+              ctx.fillStyle = Math.random() > 0.5 ? '#ff9f1c' : '#1d2733';
+              ctx.globalAlpha = 0.4;
+              if (wy > 80) ctx.fillRect(wx, wy, 15, 10);
+            }
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+      break;
+  }
+}
+
+function drawPlayer() {
+  if (!player) return;
+  const px = player.x - camera.x;
+  const py = player.y;
+
+  const flicker = invulnTimer > 0 && Math.floor(invulnTimer / 6) % 2 === 0;
+  if (flicker) return;
+
+  ctx.save();
+  if (player.facing < 0) {
+    ctx.translate(px + player.w, py);
+    ctx.scale(-1, 1);
+  } else {
+    ctx.translate(px, py);
+  }
+
+  const c = selectedChar.colours;
+  const bob = Math.sin(player.animFrame * Math.PI / 2) * 1;
+  const walkLegOffset = Math.sin(player.animFrame * Math.PI) * 3;
+
+  // Body
+  ctx.fillStyle = c.body;
+  ctx.strokeStyle = '#1d2733';
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(6, 20 + bob, 16, 16);
+  ctx.strokeRect(6, 20 + bob, 16, 16);
+
+  // Accent stripe / cross
+  ctx.fillStyle = c.accent;
+  ctx.fillRect(12, 22 + bob, 4, 12);
+  ctx.fillRect(8, 26 + bob, 12, 4);
+
+  // Legs
+  ctx.fillStyle = '#1d2733';
+  if (player.onGround && Math.abs(player.vx) > 0.5) {
+    ctx.fillRect(8, 36 + bob, 5, 4 - walkLegOffset);
+    ctx.fillRect(15, 36 + bob, 5, 4 + walkLegOffset);
+  } else if (!player.onGround) {
+    ctx.fillRect(8, 36 + bob, 5, 3);
+    ctx.fillRect(15, 36 + bob, 5, 3);
+  } else {
+    ctx.fillRect(8, 36 + bob, 5, 4);
+    ctx.fillRect(15, 36 + bob, 5, 4);
+  }
+
+  // Arms
+  ctx.fillStyle = c.body;
+  if (player.onGround && Math.abs(player.vx) > 0.5) {
+    ctx.fillRect(3, 22 + bob, 4, 10 + walkLegOffset);
+    ctx.fillRect(21, 22 + bob, 4, 10 - walkLegOffset);
+  } else {
+    ctx.fillRect(3, 22 + bob, 4, 10);
+    ctx.fillRect(21, 22 + bob, 4, 10);
+  }
+  ctx.strokeRect(3, 22 + bob, 4, 10);
+  ctx.strokeRect(21, 22 + bob, 4, 10);
+
+  // Head
+  ctx.fillStyle = c.skin;
+  ctx.beginPath();
+  ctx.arc(14, 12 + bob, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Hair
+  ctx.fillStyle = c.hair;
+  ctx.beginPath();
+  ctx.moveTo(5, 10 + bob);
+  ctx.quadraticCurveTo(14, 1 + bob, 23, 10 + bob);
+  ctx.lineTo(23, 6 + bob);
+  ctx.quadraticCurveTo(14, -3 + bob, 5, 6 + bob);
+  ctx.closePath();
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = '#1d2733';
+  ctx.beginPath();
+  ctx.arc(11, 13 + bob, 1.2, 0, Math.PI * 2);
+  ctx.arc(17, 13 + bob, 1.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Smile
+  ctx.beginPath();
+  ctx.arc(14, 15 + bob, 2, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ============== DECISION ==============
+function showDecision() {
+  const lvl = levels[currentLevel];
+  document.getElementById('decision-title').textContent = lvl.decision.title;
+  document.getElementById('decision-question').textContent = lvl.decision.question;
+  const opts = document.getElementById('decision-options');
+  opts.innerHTML = '';
+  // Shuffle options so order isn't always the same
+  const shuffled = [...lvl.decision.options].sort(() => Math.random() - 0.5);
+  shuffled.forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'decision-option';
+    btn.textContent = opt.text;
+    btn.onclick = () => chooseDecision(opt);
+    opts.appendChild(btn);
+  });
+  document.getElementById('decision-overlay').classList.remove('hidden');
+}
+
+function chooseDecision(opt) {
+  Object.keys(opt.scores).forEach(k => totals[k] += opt.scores[k]);
+
+  // Bonus from coins collected this level
+  const coinsBonus = Math.floor(coins / 5);
+
+  document.getElementById('decision-overlay').classList.add('hidden');
+
+  const icons = { win: '🎯', mid: '⚖️', fail: '⚠️' };
+  const titles = { win: 'BREAKTHROUGH', mid: 'MIXED RESULTS', fail: 'SETBACK' };
+
+  document.getElementById('result-icon').textContent = icons[opt.verdict];
+  const titleEl = document.getElementById('result-title-text');
+  titleEl.textContent = titles[opt.verdict];
+  titleEl.className = 'result-title ' + opt.verdict;
+  document.getElementById('result-msg').textContent = opt.msg;
+
+  const stats = document.getElementById('result-stats');
+  stats.innerHTML = `
+    <div class="result-stat">Coins <strong>${coins}</strong></div>
+    <div class="result-stat">Outcomes <strong>${opt.scores.outcomes > 0 ? '+' : ''}${opt.scores.outcomes}</strong></div>
+    <div class="result-stat">Feasibility <strong>${opt.scores.feasibility > 0 ? '+' : ''}${opt.scores.feasibility}</strong></div>
+    <div class="result-stat">Ethics <strong>${opt.scores.ethics > 0 ? '+' : ''}${opt.scores.ethics}</strong></div>
+    <div class="result-stat">Sustainability <strong>${opt.scores.cost > 0 ? '+' : ''}${opt.scores.cost}</strong></div>
+  `;
+
+  document.getElementById('result-btn').textContent = currentLevel >= levels.length - 1 ? 'SEE DEBRIEF' : 'NEXT LEVEL';
+  document.getElementById('result-overlay').classList.remove('hidden');
+}
+
+function afterResult() {
+  currentLevel++;
+  document.getElementById('result-overlay').classList.add('hidden');
+  if (currentLevel >= levels.length || lives <= 0) {
+    endGame(lives <= 0);
+  } else {
+    coins = 0; // reset coins per level
+    updateHUD();
+    showLevelIntro();
+  }
+}
+
+// ============== END GAME ==============
+function endGame(failed) {
+  gameRunning = false;
+  document.getElementById('game-screen').classList.add('hidden');
+  document.getElementById('end-screen').classList.remove('hidden');
+
+  const titleEl = document.getElementById('end-title');
+  const subEl = document.getElementById('end-sub');
+  if (failed) {
+    titleEl.textContent = 'GAME OVER';
+    subEl.textContent = 'YOUR REPUTATION RAN OUT';
+  } else {
+    titleEl.textContent = 'ADVENTURE COMPLETE';
+    subEl.textContent = `${selectedChar.name} • DEBRIEF`;
+  }
+
+  const total = totals.outcomes + totals.feasibility + totals.ethics + totals.cost;
+  const arch = archetypes.find(a => total >= a.threshold);
+  document.getElementById('archetype-art').innerHTML = archetypeArt[arch.art];
+  document.getElementById('archetype-name').textContent = arch.name;
+  document.getElementById('archetype-blurb').textContent = arch.desc;
+
+  const labels = { outcomes: 'Patient Outcomes', feasibility: 'Feasibility', ethics: 'Ethics & Equity', cost: 'Sustainability' };
+  const lowest = Object.keys(totals).reduce((a, b) => totals[a] < totals[b] ? a : b);
+  const highest = Object.keys(totals).reduce((a, b) => totals[a] > totals[b] ? a : b);
+
+  document.getElementById('reflection').innerHTML = `
+    <h3>// TAKE THIS INTO YOUR PITCH</h3>
+    <p>You played as <strong>${selectedChar.name}</strong>. Your strength was <strong>${labels[highest].toLowerCase()}</strong>. Lean on this in your group pitch.</p>
+    <p>Your growth edge is <strong>${labels[lowest].toLowerCase()}</strong>. When you develop the pitch for Assessment 2, stress test against this. The panel will.</p>
+    <p>For your reflective report, ask which level surprised you most and why. What assumption did the game challenge?</p>
+  `;
+}
+
+function restart() {
+  selectedChar = null;
+  currentLevel = 0;
+  coins = 0;
+  lives = 3;
+  totals = { outcomes: 0, feasibility: 0, ethics: 0, cost: 0 };
+  document.getElementById('end-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+  document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('start-btn').disabled = true;
+  updateHUD();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============== INPUT ==============
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { keys.left = true; e.preventDefault(); }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { keys.right = true; e.preventDefault(); }
+  if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') { keys.jump = true; e.preventDefault(); }
+});
+
+window.addEventListener('keyup', e => {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+  if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.jump = false;
+});
+
+// Touch controls
+function bindTouchButton(id, key) {
+  const el = document.getElementById(id);
+  const press = e => { e.preventDefault(); keys[key] = true; };
+  const release = e => { e.preventDefault(); keys[key] = false; };
+  el.addEventListener('touchstart', press, { passive: false });
+  el.addEventListener('touchend', release, { passive: false });
+  el.addEventListener('touchcancel', release, { passive: false });
+  el.addEventListener('mousedown', press);
+  el.addEventListener('mouseup', release);
+  el.addEventListener('mouseleave', release);
+}
+bindTouchButton('btn-left', 'left');
+bindTouchButton('btn-right', 'right');
+bindTouchButton('btn-jump', 'jump');
+
+// ============== INIT ==============
+initCharSelect();
+updateHUD();
+</script>
+
+</body>
+</html>
